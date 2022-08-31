@@ -27,7 +27,7 @@ int WIDTH=1024;
 int HEIGHT=768;
 float rain[AL][6]={};
 int raincount=0;
-float oldTime=0;
+clock_t oldTime=0;
 float deltaTime=0;
 
 void shiftf(int j){
@@ -39,14 +39,16 @@ void shiftf(int j){
 
 }
 void fall(){
-	deltaTime = (clock() - oldTime)/100000;
-	double fps = (1.0 / deltaTime) * 1000.0;
+	deltaTime = (float)(clock() - oldTime)/1000000;
+	if(clock()-oldTime<0){cout<<"nooo wtf";oldTime=clock();fall();return;}
+	double fps = (1.0 / (deltaTime));
+	cout<<fps<<'\n';
 
 	for(int i=0;i<raincount;i++){
-		rain[i][0]=rain[i][0]+(deltaTime*5.0*((float)rain[i][2]*abs(cos((float)rain[i][3] / (2*PI))))+rain[i][4]);
-		rain[i][1]=rain[i][1]+(deltaTime*5.0*((float)rain[i][2]*abs(sin((float)rain[i][3] / (2*PI))))+rain[i][5]);
-		rain[i][5]+=(deltaTime*0.01*((float)rain[i][2]*abs(cos((float)rain[i][3] / (2*PI)))));
-		rain[i][4]+=(deltaTime*0.01*((float)rain[i][2]*abs(sin((float)rain[i][3] / (2*PI)))));
+		rain[i][0]=rain[i][0]+(deltaTime*50.0*((float)rain[i][2]*abs(cos((float)rain[i][3] / (2*PI))))+rain[i][4]);
+		rain[i][1]=rain[i][1]+(deltaTime*50.0*((float)rain[i][2]*abs(sin((float)rain[i][3] / (2*PI))))+rain[i][5]);
+		rain[i][5]+=(deltaTime*0.1*((float)rain[i][2]*abs(cos((float)rain[i][3] / (2*PI)))));
+		rain[i][4]+=(deltaTime*0.1*((float)rain[i][2]*abs(sin((float)rain[i][3] / (2*PI)))));
 	}
 	int i=0;
 	while (i< raincount){
@@ -62,6 +64,10 @@ void fall(){
 	oldTime = clock();
 
 }
+void plot(int x,int y){
+return;
+
+}
 void plotLineHigh(int x0,int y0,int x1,int y1){
 	int dx = x1 - x0;
 	int dy = y1 - y0;
@@ -75,6 +81,7 @@ void plotLineHigh(int x0,int y0,int x1,int y1){
 
 	for (int y=y0;y<y1+1;y++){
 		if (x<=0 || x>=WIDTH || y<=0 || y>=HEIGHT){return;}
+		plot(x,y);
 //		buf[INDEX(x,y)]=1;
 		//oled.drawPixel(x,y,WHITE);
 		if (D > 0){
@@ -98,6 +105,7 @@ void plotLineLow(int x0,int y0,int x1,int y1){
 
 	for (int x=x0;x<x1+1;x++){
 		if (x<=0 || x>=WIDTH || y<=0 || y>=HEIGHT){return;}
+		plot(x,y);
 //		buf[INDEX(x,y)]=1;
 		//oled.drawPixel(x,y,WHITE);
 		if (D > 0){
@@ -128,26 +136,36 @@ void line(int x0,int y0,int x1,int y1){
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 Display *dpy = XOpenDisplay(NIL);
 int blackColor = BlackPixel(dpy, DefaultScreen(dpy));
 int whiteColor = WhitePixel(dpy, DefaultScreen(dpy));
+Window w;
+GC gc;
+
+
+
+
+
+void drawline(int x1,int y1,int x2,int y2){
+	XDrawLine(dpy, w, gc, x1,\
+			y1,\
+			x2,\
+			y2	
+		 );
+
+
+}
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -155,10 +173,10 @@ int main()
 {
 	assert (dpy);
 	// sizeX, sizeY, FileName, BackgroundColor
-	Window w =DefaultRootWindow(dpy); // XCreateSimpleWindow(dpy, DefaultRootWindow(dpy), 0, 0, WIDTH, HEIGHT, 0, blackColor, blackColor);
+	w =DefaultRootWindow(dpy); // XCreateSimpleWindow(dpy, DefaultRootWindow(dpy), 0, 0, WIDTH, HEIGHT, 0, blackColor, blackColor);
 	//XSelectInput(dpy, w, StructureNotifyMask);
 //	XMapWindow(dpy, w);
-	GC gc = XCreateGC(dpy, w, 0, NIL);
+	gc = XCreateGC(dpy, w, 0, NIL);
 	//for(;;) {
 	//	XEvent e;
 	//	XNextEvent(dpy, &e);
@@ -171,8 +189,9 @@ int main()
 		XGetWindowAttributes(dpy,w,&attr);
 		WIDTH=attr.width;
 		HEIGHT=attr.height;
-		while (((float)(clock() -prev)/(float)(CLOCKS_PER_SEC))*1000.00<(1000/FPS)){
+		while (((float)(clock() -prev)/(float)(CLOCKS_PER_SEC))*1000.00<(1000/FPS) && (clock()-prev)>=0){
 		}
+		if((clock()-prev)<0){cout<<"send help";}
 		//cout<<"fps: "<<CLOCKS_PER_SEC/(clock()-prev);
 		prev=clock();
 		for(int i=0; i< rand()%(5000/FPS);i++){
@@ -200,14 +219,13 @@ int main()
 		XClearWindow(dpy,w);
 		XSetForeground(dpy, gc, blackColor);
 		for(int i=0; i<raincount;i++){
-			XDrawLine(dpy, w, gc, rain[i][0],\
+			drawline(rain[i][0],\
 					rain[i][1],\
 					rain[i][0]+(((float)rain[i][2]*abs(cos((float)rain[i][3] / (2*PI))))+rain[i][4]),\
 					rain[i][1]+(((float)rain[i][2]*abs(sin((float)rain[i][3] / (2*PI))))+rain[i][5])
 				 );
 
 		} 	
-		XFlush(dpy);
 
 
 	}  
