@@ -42,7 +42,7 @@ void fall(){
 	deltaTime = (float)(clock() - oldTime)/1000000;
 	if(clock()-oldTime<0){cout<<"nooo wtf";oldTime=clock();fall();return;}
 	double fps = (1.0 / (deltaTime));
-	cout<<fps<<'\n';
+	//cout<<fps<<'\n';
 
 	for(int i=0;i<raincount;i++){
 		rain[i][0]=rain[i][0]+(deltaTime*50.0*((float)rain[i][2]*abs(cos((float)rain[i][3] / (2*PI))))+rain[i][4]);
@@ -183,7 +183,7 @@ int main()
 	//	if (e.type == MapNotify)
 	//		break;
 	//}
-	int prev=clock();
+	clock_t prev=clock();
 	while (true){
 		XWindowAttributes attr;
 		XGetWindowAttributes(dpy,w,&attr);
